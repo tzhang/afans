@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Eye, EyeOff } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const RegisterPage: React.FC = () => {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     username: '',
     email: '',
@@ -40,11 +41,38 @@ const RegisterPage: React.FC = () => {
     setIsLoading(true);
 
     try {
-      // TODO: 实现注册逻辑
-      console.log('Register data:', formData);
-      toast.success('注册成功！');
+      const response = await fetch('http://localhost:3000/api/auth/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          username: formData.username,
+          email: formData.email,
+          password: formData.password,
+          userType: formData.userType,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        // 保存用户信息和token到localStorage
+        localStorage.setItem('token', data.data.token);
+        localStorage.setItem('user', JSON.stringify(data.data.user));
+        
+        toast.success('注册成功！');
+        
+        // 注册成功后跳转到主页
+        setTimeout(() => {
+          navigate('/');
+        }, 1000);
+      } else {
+        toast.error(data.message || '注册失败');
+      }
     } catch (error) {
-      toast.error('注册失败，请稍后重试');
+      console.error('Register error:', error);
+      toast.error('网络错误，请稍后重试');
     } finally {
       setIsLoading(false);
     }

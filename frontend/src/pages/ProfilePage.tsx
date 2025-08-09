@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { Camera, Edit3, Save, X } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -293,9 +294,9 @@ const ProfilePage: React.FC = () => {
                 <h3 className="text-sm font-medium text-gray-900">邮件通知</h3>
                 <p className="text-sm text-gray-500">管理邮件通知偏好设置</p>
               </div>
-              <button className="btn-secondary">
+              <Link to="/settings" className="btn-secondary">
                 设置
-              </button>
+              </Link>
             </div>
 
             <div className="border-t border-gray-200 pt-6">

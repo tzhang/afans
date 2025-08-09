@@ -3,7 +3,7 @@ import toast from 'react-hot-toast';
 
 // 创建axios实例
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:3000/api',
+  baseURL: (import.meta as any).env.VITE_API_URL || 'http://localhost:3000/api',
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
@@ -139,53 +139,98 @@ export const creatorAPI = {
 // 内容相关API
 export const contentAPI = {
   // 获取内容列表
-  getContent: (params?: {
+  getContentList: async (params?: {
     page?: number;
     limit?: number;
     category?: string;
     search?: string;
     creatorId?: string;
-  }) => api.get('/content', { params }),
-  
+    contentType?: string;
+  }) => {
+    const response = await api.get('/content', { params });
+    return response.data;
+  },
+
   // 获取内容详情
-  getContentById: (id: string) => api.get(`/content/${id}`),
-  
-  // 创建内容
-  createContent: (contentData: any) => 
-    api.post('/content', contentData),
-  
-  // 更新内容
-  updateContent: (id: string, contentData: any) => 
-    api.put(`/content/${id}`, contentData),
-  
-  // 删除内容
-  deleteContent: (id: string) => api.delete(`/content/${id}`),
-  
+  getContentById: async (id: string) => {
+    const response = await api.get(`/content/${id}`);
+    return response.data;
+  },
+
   // 上传视频
-  uploadVideo: (file: File, onProgress?: (progress: number) => void) => {
+  uploadVideo: async (file: File, onProgress?: (progress: number) => void) => {
     const formData = new FormData();
     formData.append('video', file);
-    return api.post('/content/upload-video', formData, {
+    
+    const response = await api.post('/content/upload-video', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
       onUploadProgress: (progressEvent) => {
         if (onProgress && progressEvent.total) {
-          const progress = Math.round(
-            (progressEvent.loaded * 100) / progressEvent.total
-          );
+          const progress = Math.round((progressEvent.loaded * 100) / progressEvent.total);
           onProgress(progress);
         }
       },
     });
+    return response.data;
   },
-  
+
+  // 上传缩略图
+  uploadThumbnail: async (file: File) => {
+    const formData = new FormData();
+    formData.append('thumbnail', file);
+    
+    const response = await api.post('/content/upload-thumbnail', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return response.data;
+  },
+
+  // 创建内容
+  createContent: async (contentData: any) => {
+    const response = await api.post('/content', contentData);
+    return response.data;
+  },
+
+  // 更新内容
+  updateContent: async (id: string, contentData: any) => {
+    const response = await api.put(`/content/${id}`, contentData);
+    return response.data;
+  },
+
+  // 删除内容
+  deleteContent: async (id: string) => {
+    const response = await api.delete(`/content/${id}`);
+    return response.data;
+  },
+
   // 点赞内容
-  likeContent: (id: string) => api.post(`/content/${id}/like`),
-  
+  likeContent: async (id: string) => {
+    const response = await api.post(`/content/${id}/like`);
+    return response.data;
+  },
+
+  // 取消点赞
+  unlikeContent: async (id: string) => {
+    const response = await api.delete(`/content/${id}/like`);
+    return response.data;
+  },
+
   // 收藏内容
-  favoriteContent: (id: string) => api.post(`/content/${id}/favorite`),
-  
+  favoriteContent: async (id: string) => {
+    const response = await api.post(`/content/${id}/favorite`);
+    return response.data;
+  },
+
+  // 取消收藏
+  unfavoriteContent: async (id: string) => {
+    const response = await api.delete(`/content/${id}/favorite`);
+    return response.data;
+  },
+
   // 获取评论
   getComments: (contentId: string, params?: {
     page?: number;

@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Eye, EyeOff } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const LoginPage: React.FC = () => {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -24,11 +25,40 @@ const LoginPage: React.FC = () => {
     setIsLoading(true);
 
     try {
-      // TODO: 实现登录逻辑
-      console.log('Login data:', formData);
-      toast.success('登录成功！');
+      const response = await fetch('http://localhost:3000/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: formData.email,
+          password: formData.password,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        // 保存用户信息和token到localStorage
+        localStorage.setItem('token', data.data.token);
+        localStorage.setItem('user', JSON.stringify(data.data.user));
+        
+        toast.success('登录成功！');
+        
+        // 根据用户类型跳转到不同页面
+        setTimeout(() => {
+          if (data.data.user.isCreator) {
+            navigate('/profile'); // 创作者跳转到个人资料页面
+          } else {
+            navigate('/'); // 普通用户跳转到主页
+          }
+        }, 1000);
+      } else {
+        toast.error(data.message || '登录失败');
+      }
     } catch (error) {
-      toast.error('登录失败，请检查邮箱和密码');
+      console.error('Login error:', error);
+      toast.error('网络错误，请稍后重试');
     } finally {
       setIsLoading(false);
     }
